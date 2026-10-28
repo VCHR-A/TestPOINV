@@ -186,7 +186,7 @@
                 <div class="lg:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-semibold text-slate-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-anchor text-blue-600"></i> ปริมาณตู้สินค้าและ CBM แยกตามท่าเรือต้นทาง (Origin Port)
+                            <i class="fa-solid fa-anchor text-blue-600"></i> ปริมาณตู้สินค้าและ CBM แยกตามท่าเรือต้นทาง (Origin Port Volume)
                         </h3>
                     </div>
                     <div class="h-64 relative">
@@ -222,25 +222,9 @@
         </div>
 
         <!-- TAB 2: FULL DATA TABLE (24 COLUMNS) -->
-        <div id="tab-data" class="hidden space-y-4">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-base">รายการข้อมูลนำเข้าทั้งหมด (All Import Records)</h3>
-                        <p class="text-xs text-slate-500">ตรงตามฟอร์แมต 24 คอลัมน์จากไฟล์ Candidate Test</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="exportToExcel()" class="px-3 py-2 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-excel"></i> Export Filtered Excel (.xlsx)
-                        </button>
-                        <button onclick="exportToCSV()" class="px-3 py-2 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition shadow flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-csv"></i> Export CSV
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Horizontal Scrollable Table -->
-                <div class="overflow-x-auto custom-scrollbar border border-slate-200 rounded-lg">
+        <div id="tab-data" class="hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
                     <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
                         <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200 sticky top-0">
                             <tr>
@@ -274,10 +258,6 @@
                             <!-- Populated dynamically via JS -->
                         </tbody>
                     </table>
-                </div>
-
-                <div class="flex justify-between items-center text-xs text-slate-500 pt-2">
-                    <span id="data-count-text">แสดง 0 จาก 0 รายการ</span>
                 </div>
             </div>
         </div>
@@ -336,16 +316,16 @@
                 JobId: 'J2026-001', ETA: '2026-03-01', ATA: '2026-03-01', InvoiceNo: 'INV-2026-901', OriginPort: 'Semarang', ReleasePort: 'Laem Chabang', CarrierName: 'Maersk Line', ContainerNo: 'MSKU1234567', ContainerCount: 1, SealNo: 'SL-01', ContainerSize: '40H', Cartons: 800, CBM: 55.0, FileNameDate: '2026-02-28', DORelease: 'Yes', ShippingDocReceiveDate: '2026-02-28', ShippingDocIssueReason: 'รอแก้ไข', ShippingDocCompleteDate: '2026-03-01', StatusDeclaration: 'Release', CustomsReleaseImportDate: '2026-03-02', DeliveryPlanDate: '2026-03-03', ImportDeclarationReleaseDate: '2026-03-02', DeliveryDateCustoms: '2026-03-03', DeliveryPlace: 'Bangna Warehouse'
             },
             {
-                JobId: 'J2026-002', ETA: '2026-03-03', ATA: '2026-03-04', InvoiceNo: 'INV-2026-902', OriginPort: 'Haiphong', ReleasePort: 'Bangkok Port', CarrierName: 'CNC LINE', ContainerNo: 'CNCU8876543', ContainerCount: 2, SealNo: 'CNC-02', ContainerSize: '20S', Cartons: 520, CBM: 28.5, FileNameDate: '2026-03-01', DORelease: 'Pending', ShippingDocReceiveDate: '2026-03-02', ShippingDocIssueReason: '', ShippingDocCompleteDate: '2026-03-04', StatusDeclaration: 'Release', CustomsReleaseImportDate: '2026-03-05', DeliveryPlanDate: '2026-03-07', ImportDeclarationReleaseDate: '2026-03-06', DeliveryDateCustoms: '2026-03-08', DeliveryPlace: 'Samutprakarn'
+                JobId: 'J2026-002', ETA: '2026-03-03', ATA: '2026-03-04', InvoiceNo: 'INV-2026-902', OriginPort: 'Haiphong', ReleasePort: 'Bangkok Port', CarrierName: 'CNC LINE', ContainerNo: 'CNCU8876543', ContainerCount: 1, SealNo: 'SL-02', ContainerSize: '20S', Cartons: 420, CBM: 30.5, FileNameDate: '2026-02-27', DORelease: 'Yes', ShippingDocReceiveDate: '2026-02-27', ShippingDocIssueReason: '', ShippingDocCompleteDate: '2026-03-03', StatusDeclaration: 'Release', CustomsReleaseImportDate: '2026-03-04', DeliveryPlanDate: '2026-03-05', ImportDeclarationReleaseDate: '2026-03-04', DeliveryDateCustoms: '2026-03-05', DeliveryPlace: 'Samutprakarn Warehouse'
             },
             {
-                JobId: 'J2026-003', ETA: '2026-03-05', ATA: '2026-03-05', InvoiceNo: 'INV-2026-903', OriginPort: 'Sihanoukville', ReleasePort: 'Laem Chabang', CarrierName: 'SITC', ContainerNo: 'SIT1122334', ContainerCount: 1, SealNo: 'ST-77', ContainerSize: '40H', Cartons: 660, CBM: 61.8, FileNameDate: '2026-03-02', DORelease: 'Yes', ShippingDocReceiveDate: '2026-03-03', ShippingDocIssueReason: '', ShippingDocCompleteDate: '2026-03-05', StatusDeclaration: 'Release', CustomsReleaseImportDate: '2026-03-06', DeliveryPlanDate: '2026-03-07', ImportDeclarationReleaseDate: '2026-03-06', DeliveryDateCustoms: '2026-03-08', DeliveryPlace: 'Bangna Warehouse'
+                JobId: 'J2026-003', ETA: '2026-03-05', ATA: '2026-03-05', InvoiceNo: 'INV-2026-903', OriginPort: 'Sihanoukville', ReleasePort: 'Laem Chabang', CarrierName: 'SITC', ContainerNo: 'SIT1122334', ContainerCount: 1, SealNo: 'SL-03', ContainerSize: '40S', Cartons: 620, CBM: 41.5, FileNameDate: '2026-03-01', DORelease: 'Pending', ShippingDocReceiveDate: '2026-03-01', ShippingDocIssueReason: '', ShippingDocCompleteDate: '2026-03-05', StatusDeclaration: 'Hold', CustomsReleaseImportDate: '2026-03-06', DeliveryPlanDate: '2026-03-08', ImportDeclarationReleaseDate: '2026-03-06', DeliveryDateCustoms: '2026-03-08', DeliveryPlace: 'Bangna Warehouse'
             },
             {
-                JobId: 'J2026-004', ETA: '2026-03-10', ATA: '2026-03-11', InvoiceNo: 'INV-2026-904', OriginPort: 'Semarang', ReleasePort: 'Laem Chabang', CarrierName: 'Maersk Line', ContainerNo: 'MSKU9988776', ContainerCount: 1, SealNo: 'SL-88', ContainerSize: '40S', Cartons: 720, CBM: 53.1, FileNameDate: '2026-03-05', DORelease: 'Draft', ShippingDocReceiveDate: '2026-03-08', ShippingDocIssueReason: 'รอแก้ไขเอกสาร', ShippingDocCompleteDate: '2026-03-11', StatusDeclaration: 'Pending', CustomsReleaseImportDate: '2026-03-12', DeliveryPlanDate: '2026-03-13', ImportDeclarationReleaseDate: '2026-03-12', DeliveryDateCustoms: '2026-03-14', DeliveryPlace: 'Bangna Warehouse'
+                JobId: 'J2026-004', ETA: '2026-03-10', ATA: '2026-03-11', InvoiceNo: 'INV-2026-904', OriginPort: 'Semarang', ReleasePort: 'Laem Chabang', CarrierName: 'Maersk Line', ContainerNo: 'MSKU9988776', ContainerCount: 2, SealNo: 'SL-04', ContainerSize: '40H', Cartons: 960, CBM: 62.8, FileNameDate: '2026-03-04', DORelease: 'Yes', ShippingDocReceiveDate: '2026-03-04', ShippingDocIssueReason: 'ตรวจเอกสารไม่ครบ', ShippingDocCompleteDate: '2026-03-10', StatusDeclaration: 'Release', CustomsReleaseImportDate: '2026-03-11', DeliveryPlanDate: '2026-03-12', ImportDeclarationReleaseDate: '2026-03-11', DeliveryDateCustoms: '2026-03-12', DeliveryPlace: 'Bangna Warehouse'
             },
             {
-                JobId: 'J2026-005', ETA: '2026-03-15', ATA: '2026-03-15', InvoiceNo: 'INV-2026-905', OriginPort: 'Shanghai', ReleasePort: 'Bangkok Port', CarrierName: 'COSCO', ContainerNo: 'COSU4455667', ContainerCount: 3, SealNo: 'CS-12', ContainerSize: '40H', Cartons: 980, CBM: 75.5, FileNameDate: '2026-03-09', DORelease: 'Yes', ShippingDocReceiveDate: '2026-03-10', ShippingDocIssueReason: '', ShippingDocCompleteDate: '2026-03-15', StatusDeclaration: 'Release', CustomsReleaseImportDate: '2026-03-16', DeliveryPlanDate: '2026-03-17', ImportDeclarationReleaseDate: '2026-03-16', DeliveryDateCustoms: '2026-03-18', DeliveryPlace: 'Samutprakarn'
+                JobId: 'J2026-005', ETA: '2026-03-15', ATA: '2026-03-15', InvoiceNo: 'INV-2026-905', OriginPort: 'Shanghai', ReleasePort: 'Bangkok Port', CarrierName: 'COSCO', ContainerNo: 'COSU4455667', ContainerCount: 1, SealNo: 'SL-05', ContainerSize: '40S', Cartons: 540, CBM: 34.2, FileNameDate: '2026-03-09', DORelease: 'Yes', ShippingDocReceiveDate: '2026-03-09', ShippingDocIssueReason: '', ShippingDocCompleteDate: '2026-03-15', StatusDeclaration: 'Release', CustomsReleaseImportDate: '2026-03-16', DeliveryPlanDate: '2026-03-17', ImportDeclarationReleaseDate: '2026-03-16', DeliveryDateCustoms: '2026-03-17', DeliveryPlace: 'Laem Chabang Warehouse'
             }
         ];
 
@@ -522,7 +502,7 @@
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('data-count-text').innerText = `แสดง ${filteredData.length} จาก ${rawData.length} รายการ`;
+            document.getElementById('data-count-text')?.innerText = `แสดง ${filteredData.length} จาก ${rawData.length} รายการ`;
         }
 
         function renderCharts() {
