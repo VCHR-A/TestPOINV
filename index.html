@@ -744,7 +744,7 @@
             const ws = XLSX.utils.json_to_sheet(template);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Candidate_Template');
-            XLSX.writeFile(wb, 'Candidate_Import_Template.xlsx');
+            XLSX.writeFile(wb, 'Import_Template.xlsx');
         }
 
         function showToast(msg) {
