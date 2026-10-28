@@ -298,6 +298,44 @@
         let sizeChartInstance = null;
         let timelineChartInstance = null;
 
+        function normalizeContainerMetrics(data) {
+            const containerMap = new Map();
+
+            data.forEach(item => {
+                const containerNo = String(item.ContainerNo || '').trim();
+                const count = Number(item.ContainerCount) || Number(item.CTNRCount) || 1;
+                const size = String(item.ContainerSize || '').trim() || 'Unknown';
+                const port = String(item.OriginPort || '').trim() || 'Unspecified';
+
+                const key = containerNo || `__EMPTY__${port}`;
+                const existing = containerMap.get(key);
+
+                if (!existing || count > existing.count) {
+                    containerMap.set(key, {
+                        count: Math.max(1, count),
+                        size,
+                        port
+                    });
+                }
+            });
+
+            let total = 0;
+            const bySize = {};
+            const byPort = {};
+
+            containerMap.forEach(entry => {
+                total += entry.count;
+
+                const sizeKey = entry.size || 'Unknown';
+                bySize[sizeKey] = (bySize[sizeKey] || 0) + entry.count;
+
+                const portKey = entry.port || 'Unspecified';
+                byPort[portKey] = (byPort[portKey] || 0) + entry.count;
+            });
+
+            return { total, bySize, byPort };
+        }
+
         window.onload = function() {
             rawData = [];
             filteredData = [];
@@ -392,46 +430,32 @@
         }
 
         function renderKPIs() {
+            const metrics = normalizeContainerMetrics(filteredData);
             let totalJobs = filteredData.length;
-            let totalCtnr = 0;
-            let count40H = 0, count20S = 0, count40S = 0;
-            let totalCartons = 0;
-            let totalCBM = 0;
             let issueCount = 0;
 
-            if (filteredData.length === 0) {
-                document.getElementById('kpi-total-jobs').innerText = '0';
-                document.getElementById('kpi-job-subtext').innerText = 'ยังไม่มีข้อมูล';
-                document.getElementById('kpi-total-ctnr').innerText = '0';
-                document.getElementById('kpi-ctnr-sizes').innerText = '40H: 0 | 20S: 0 | 40S: 0';
-                document.getElementById('kpi-total-cbm').innerText = '0 CBM';
-                document.getElementById('kpi-total-cartons').innerText = '0 Cartons';
-                document.getElementById('kpi-issue-count').innerText = '0';
-                document.getElementById('kpi-issue-percent').innerText = '0% ของรายการทั้งหมด';
-                return;
-            }
-
             filteredData.forEach(item => {
-                const ctnCount = parseInt(item.ContainerCount) || 1;
-                totalCtnr += ctnCount;
-
-                const sz = (item.ContainerSize || '').toUpperCase();
-                if (sz.includes('40H')) count40H += ctnCount;
-                else if (sz.includes('20S')) count20S += ctnCount;
-                else if (sz.includes('40S')) count40S += ctnCount;
-
-                totalCartons += parseInt(item.Cartons) || 0;
-                totalCBM += parseFloat(item.CBM) || 0;
-
                 if (item.ShippingDocIssueReason && item.ShippingDocIssueReason.trim() !== '') {
                     issueCount++;
                 }
             });
 
+            const totalCtnr = metrics.total;
+            const count40H = (metrics.bySize['40H'] || 0) + (metrics.bySize['40HC'] || 0) + (metrics.bySize['40HQ'] || 0);
+            const count20S = metrics.bySize['20S'] || 0;
+            const count40S = metrics.bySize['40S'] || 0;
+
             document.getElementById('kpi-total-jobs').innerText = totalJobs.toLocaleString();
-            document.getElementById('kpi-job-subtext').innerText = `${totalJobs} รายการ`;
+            document.getElementById('kpi-job-subtext').innerText = totalJobs > 0 ? `${totalJobs} รายการ` : 'ยังไม่มีข้อมูล';
             document.getElementById('kpi-total-ctnr').innerText = totalCtnr.toLocaleString();
             document.getElementById('kpi-ctnr-sizes').innerText = `40H: ${count40H} | 20S: ${count20S} | 40S: ${count40S}`;
+
+            let totalCartons = 0;
+            let totalCBM = 0;
+            filteredData.forEach(item => {
+                totalCartons += parseInt(item.Cartons) || 0;
+                totalCBM += parseFloat(item.CBM) || 0;
+            });
             document.getElementById('kpi-total-cbm').innerText = totalCBM.toFixed(1) + ' CBM';
             document.getElementById('kpi-total-cartons').innerText = totalCartons.toLocaleString() + ' Cartons';
             document.getElementById('kpi-issue-count').innerText = issueCount.toLocaleString();
@@ -526,17 +550,28 @@
                 return;
             }
 
-            const originGroup = {};
+            const originGroupMap = new Map();
             filteredData.forEach(item => {
                 const port = item.OriginPort || 'Unspecified';
-                if (!originGroup[port]) originGroup[port] = { count: 0, cbm: 0 };
-                originGroup[port].count += parseInt(item.ContainerCount) || 1;
-                originGroup[port].cbm += parseFloat(item.CBM) || 0;
+                const key = `${port}|${(item.ContainerNo || '').trim() || '__EMPTY__'}`;
+                const count = Number(item.ContainerCount) || 1;
+                const existing = originGroupMap.get(key);
+                if (!existing || count > existing.count) {
+                    originGroupMap.set(key, { port, count });
+                }
             });
 
-            const originLabels = Object.keys(originGroup);
-            const originCounts = originLabels.map(p => originGroup[p].count);
-            const originCBMs = originLabels.map(p => originGroup[p].cbm);
+            const originByPort = {};
+            originGroupMap.forEach(entry => {
+                originByPort[entry.port] = (originByPort[entry.port] || 0) + entry.count;
+            });
+
+            const originLabels = Object.keys(originByPort);
+            const originCounts = originLabels.map(p => originByPort[p]);
+            const originCBMs = originLabels.map(p => {
+                const totalCBM = filteredData.filter(item => (item.OriginPort || 'Unspecified') === p).reduce((sum, item) => sum + (parseFloat(item.CBM) || 0), 0);
+                return totalCBM;
+            });
 
             if (originChartInstance) originChartInstance.destroy();
             const ctx1 = document.getElementById('originPortChart').getContext('2d');
@@ -552,10 +587,20 @@
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            const sizeGroup = {};
+            const sizeGroupMap = new Map();
             filteredData.forEach(item => {
-                const sz = item.ContainerSize || 'Unknown';
-                sizeGroup[sz] = (sizeGroup[sz] || 0) + (parseInt(item.ContainerCount) || 1);
+                const size = String(item.ContainerSize || 'Unknown').trim() || 'Unknown';
+                const key = `${size}|${(item.ContainerNo || '').trim() || '__EMPTY__'}`;
+                const count = Number(item.ContainerCount) || 1;
+                const existing = sizeGroupMap.get(key);
+                if (!existing || count > existing.count) {
+                    sizeGroupMap.set(key, { size, count });
+                }
+            });
+
+            const sizeByGroup = {};
+            sizeGroupMap.forEach(entry => {
+                sizeByGroup[entry.size] = (sizeByGroup[entry.size] || 0) + entry.count;
             });
 
             if (sizeChartInstance) sizeChartInstance.destroy();
@@ -563,9 +608,9 @@
             sizeChartInstance = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(sizeGroup),
+                    labels: Object.keys(sizeByGroup),
                     datasets: [{
-                        data: Object.values(sizeGroup),
+                        data: Object.values(sizeByGroup),
                         backgroundColor: ['#6366f1', '#f59e0b', '#ec4899', '#14b8a6', '#22c55e']
                     }]
                 },
@@ -629,6 +674,9 @@
                             return index !== -1 ? row[index] : '';
                         };
 
+                        const containerNo = getVal('CTNR NO') || getVal('Container') || getVal('CTNR') || '';
+                        const containerCount = parseInt(getVal('CTNR NO. Count') || getVal('Count') || getVal('Container Count') || '1') || 1;
+
                         return {
                             JobId: getVal('Job I') || getVal('Job') || `J2026-${idx + 100}`,
                             ETA: formatDateVal(getVal('ETA')),
@@ -637,8 +685,8 @@
                             OriginPort: getVal('Origin') || 'Unspecified',
                             ReleasePort: getVal('Release Port') || '',
                             CarrierName: getVal('Carrier') || '',
-                            ContainerNo: getVal('CTNR NO') || getVal('Container') || '',
-                            ContainerCount: parseInt(getVal('Count')) || 1,
+                            ContainerNo: containerNo,
+                            ContainerCount: containerCount,
                             SealNo: getVal('Seal') || '',
                             ContainerSize: getVal('Size') || '40H',
                             Cartons: parseInt(getVal('Cartons')) || 0,
@@ -744,7 +792,7 @@
             const ws = XLSX.utils.json_to_sheet(template);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Candidate_Template');
-            XLSX.writeFile(wb, 'Import_Template.xlsx');
+            XLSX.writeFile(wb, 'Candidate_Import_Template.xlsx');
         }
 
         function showToast(msg) {
